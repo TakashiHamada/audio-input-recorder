@@ -27,14 +27,16 @@ Macのオーディオ入力端子につないだ**ゲームの音声を、ロス
 
 ## GitHub Pages で公開する
 
-このリポジトリには Pages へ自動デプロイする GitHub Actions ワークフロー
-(`.github/workflows/deploy.yml`)が含まれています。
+このアプリは静的ファイルのみなので、ブランチをそのまま Pages で配信できます。
 
 1. GitHub のリポジトリ → **Settings → Pages** を開く。
-2. **Build and deployment → Source** を **GitHub Actions** に設定。
-3. `main` ブランチに push すると自動でデプロイされ、`https://<ユーザー名>.github.io/audio-input-recorder/` で公開されます。
+2. **Build and deployment → Source** を **Deploy from a branch** にする。
+3. 公開したいブランチ(例: `main`)と `/ (root)` を選んで保存。
+4. 数十秒後、`https://<ユーザー名>.github.io/audio-input-recorder/` で公開されます。
 
-ローカルで確認する場合は、リポジトリ直下で簡易サーバーを起動してください
+## ローカルで確認する
+
+リポジトリ直下で簡易サーバーを起動してください
 (`file://` ではマイク権限とAudioWorkletが動きません):
 
 ```bash
@@ -50,7 +52,6 @@ python3 -m http.server 8000
 | `style.css` | スタイル |
 | `app.js` | 録音・WAVエンコード・UI制御 |
 | `recorder-processor.js` | AudioWorklet(生PCMの取り込み) |
-| `.github/workflows/deploy.yml` | GitHub Pages 自動デプロイ |
 
 ## 対応ブラウザ
 
