@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ライン入力レコーダー | Game Audio Recorder</title>
+  <meta name="description" content="Macのライン入力端子から、ゲームの音声をロスレス(WAV)でキレイに録音するWebアプリ。" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main class="app">
+    <header class="header">
+      <h1>🎧 ライン入力レコーダー</h1>
+      <p class="subtitle">Macのオーディオ入力端子につないだゲーム音声を、ロスレス(WAV)でキレイに録音します。</p>
+    </header>
+
+    <section class="card" id="setup-card">
+      <h2>1. 入力デバイス</h2>
+      <div class="field">
+        <label for="device-select">録音する入力デバイス</label>
+        <div class="row">
+          <select id="device-select" disabled>
+            <option>マイクへのアクセスを許可してください</option>
+          </select>
+          <button id="permission-btn" class="btn btn-secondary">マイク／入力を許可</button>
+        </div>
+        <p class="hint">外部入力(USBオーディオI/Fやライン入力)を選んでください。MacBookの内蔵ヘッドホン端子は機種により入力非対応の場合があります。</p>
+      </div>
+
+      <div class="field">
+        <h2>2. 音質設定</h2>
+        <div class="toggles">
+          <label class="toggle">
+            <input type="checkbox" id="opt-noise-suppression" />
+            <span>ノイズ抑制</span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="opt-echo-cancellation" />
+            <span>エコーキャンセル</span>
+          </label>
+          <label class="toggle">
+            <input type="checkbox" id="opt-auto-gain" />
+            <span>自動ゲイン調整</span>
+          </label>
+        </div>
+        <p class="hint warn">⚠️ ゲーム音声をキレイに録るには、上の3つは<strong>すべてオフ</strong>が推奨です(音声通話向けの加工を無効化します)。</p>
+
+        <div class="row">
+          <div class="field-inline">
+            <label for="channel-select">チャンネル</label>
+            <select id="channel-select">
+              <option value="2" selected>ステレオ (2ch)</option>
+              <option value="1">モノラル (1ch)</option>
+            </select>
+          </div>
+          <div class="field-inline">
+            <label for="bitdepth-select">ビット深度</label>
+            <select id="bitdepth-select">
+              <option value="16" selected>16-bit (標準/CD品質)</option>
+              <option value="24">24-bit (高解像度)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="monitor-card">
+      <h2>3. レベル確認</h2>
+      <div class="meters">
+        <div class="meter-row">
+          <span class="meter-label">L</span>
+          <div class="meter"><div class="meter-fill" id="meter-l"></div><div class="meter-peak" id="peak-l"></div></div>
+        </div>
+        <div class="meter-row">
+          <span class="meter-label">R</span>
+          <div class="meter"><div class="meter-fill" id="meter-r"></div><div class="meter-peak" id="peak-r"></div></div>
+        </div>
+      </div>
+      <p class="hint" id="clip-warning" hidden>🔴 音が大きすぎて歪んでいます(クリップ)。ゲーム側か出力の音量を下げてください。</p>
+
+      <div class="field">
+        <label for="gain-slider">入力ゲイン: <span id="gain-value">0.0 dB</span></label>
+        <input type="range" id="gain-slider" min="-24" max="24" step="0.5" value="0" />
+        <p class="hint">録音される音そのものに適用されます。メーターが時々上端に届くくらい(クリップ手前)が目安です。</p>
+      </div>
+
+      <label class="toggle">
+        <input type="checkbox" id="opt-monitor" />
+        <span>モニター(入力音をスピーカー/ヘッドホンで聞く)</span>
+      </label>
+      <p class="hint">⚠️ スピーカーで使うとハウリングする場合があります。ヘッドホン推奨。</p>
+    </section>
+
+    <section class="card" id="record-card">
+      <h2>4. 録音</h2>
+      <div class="controls">
+        <button id="record-btn" class="btn btn-record" disabled>● 録音開始</button>
+        <span class="timer" id="timer">00:00:00</span>
+        <span class="status" id="status">準備中…</span>
+      </div>
+    </section>
+
+    <section class="card" id="recordings-card">
+      <h2>録音した音声</h2>
+      <ul class="recordings" id="recordings-list">
+        <li class="empty" id="recordings-empty">まだ録音がありません。</li>
+      </ul>
+    </section>
+
+    <footer class="footer">
+      <details>
+        <summary>Macでの接続方法 / トラブルシューティング</summary>
+        <div class="help">
+          <h3>接続</h3>
+          <ol>
+            <li>ゲーム機のオーディオ出力(ヘッドホン端子やRCA)を、ケーブルでMacの<strong>ライン入力</strong>につなぎます。</li>
+            <li>多くのMacBookの3.5mm端子は<strong>出力専用</strong>です。入力が無い場合は、USBオーディオインターフェイスや「ライン入力対応」のUSBアダプタを使ってください。</li>
+            <li>システム設定 → サウンド → 入力 で、つないだデバイスが認識され、レベルが振れることを確認します。</li>
+          </ol>
+          <h3>キレイに録るコツ</h3>
+          <ul>
+            <li>「ノイズ抑制」「エコーキャンセル」「自動ゲイン」は<strong>オフ</strong>に(このページの初期設定どおり)。</li>
+            <li>歪み(クリップ)を避けるため、メーターが赤の上端に張り付かない音量に。</li>
+            <li>ロスレスで残したいので<strong>WAV</strong>で保存されます。</li>
+          </ul>
+          <p class="note">このアプリは音声をどこにも送信しません。すべてブラウザ内で処理され、録音データはお使いの端末に保存されます。</p>
+        </div>
+      </details>
+      <p class="credit">すべてブラウザ内で動作するオープンソースのツールです。録音データは端末から外に出ません。</p>
+    </footer>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
